@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shahwar To-Do List</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #ffffff, #fff);
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .todo-container {
+            width: 90%;
+            max-width: 400px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #000000;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .date-time {
+            font-size: 1em;
+            margin: 10px 0;
+        }
+
+        .input-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .todo-input {
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .add-btn {
+            padding: 10px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #000000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .add-btn:hover {
+            background-color: #0000007e;
+        }
+
+        .todo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s;
+        }
+
+        .todo-item:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+
+        .todo-item.completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .todo-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        .delete-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .delete-btn:hover {
+            background-color: #e55d5d;
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                font-size: 1.2em;
+                padding: 15px;
+            }
+
+            .input-container {
+                padding: 15px;
+            }
+
+            .todo-input, .add-btn {
+                font-size: 0.9em;
+            }
+
+            .todo-item {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="todo-container">
+        <div class="header">
+            Shahwar's To-Do List
+            <div class="date-time" id="dateTime"></div>
+        </div>
+        <div class="input-container">
+            <input type="text" id="todoInput" class="todo-input" placeholder="Enter a task...">
+            <button class="add-btn" id="addBtn">Add Task</button>
+        </div>
+        <ul id="todoList" class="todo-list"></ul>
+    </div>
+
+    <script>
+        const todoInput = document.getElementById('todoInput');
+        const addBtn = document.getElementById('addBtn');
+        const todoList = document.getElementById('todoList');
+        const dateTimeElement = document.getElementById('dateTime');
+
+
+        const updateDateTime = () => {
+            const now = new Date();
+            const date = now.toLocaleDateString();
+            const time = now.toLocaleTimeString();
+            dateTimeElement.textContent = `${date} | ${time}`;
+        };
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+
+        const loadTodos = () => {
+            const todos = JSON.parse(localStorage.getItem('todos')) || [];
+            todos.forEach(todo => {
+                addTodoToDOM(todo.text, todo.completed);
+            });
+        };
+
+        
+        const saveTodos = () => {
+            const todos = Array.from(todoList.children).map(item => ({
+                text: item.querySelector('span').textContent,
+                completed: item.classList.contains('completed')
+            }));
+            localStorage.setItem('todos', JSON.stringify(todos));
+        };
+
+
+        const addTodoToDOM = (text, completed = false) => {
+            const li = document.createElement('li');
+            li.className = `todo-item${completed ? ' completed' : ''}`;
+
+            const span = document.createElement('span');
+            span.textContent = text;
+            span.addEventListener('click', () => {
+                li.classList.toggle('completed');
+                saveTodos();
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.addEventListener('click', () => {
+                li.remove();
+                saveTodos();
+            });
+
+            li.appendChild(span);
+            li.appendChild(deleteBtn);
+            todoList.appendChild(li);
+        };
+
+
+        addBtn.addEventListener('click', () => {
+            const text = todoInput.value.trim();
+            if (text) {
+                addTodoToDOM(text);
+                saveTodos();
+                todoInput.value = '';
+            }
+        });
+
+     
+        loadTodos();
+    </script>
+</body>
+</html>
